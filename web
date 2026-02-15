@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>DRAW BITCOIN — Pixel Square Edition V4.1</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  /* === Charte couleur === */
+  --bg:#282828;
+  --panel:#282828;
+  --panel2:#282828;
+  --ink:#c0c6cf;
+  --muted:#c0c6cf;
+  --accent:#f3c623;
+  --frame:4px;
+  --shadow45:4px 4px 0 #000, 12px 12px 18px rgba(0,0,0,.35);
+
+  /* Réglages palette */
+  --palette-gap:12px;
+  --swatch-min-h:55px;
+  --title-size:12px;
+}
+
+*{box-sizing:border-box;}
+html,body{
+  margin:0;height:100%;
+  background:var(--bg);
+  font-family:'Press Start 2P',monospace;
+  color:var(--ink);
+}
+.wrap{max-width:1320px;margin:32px auto;padding:0 20px;}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.logo{font-size:60px;color:var(--accent);letter-spacing:8px;text-shadow: 6px 6px 0 #000;}
+.btn{
+  border:var(--frame) solid #000;
+  padding:10px 14px;
+  font-size:11px;
+  background:#2c2c30;
+  color:#fff;
+  box-shadow:var(--shadow45);
+  cursor:pointer;
+  font-family:'Press Start 2P',monospace;
+}
+.btn:active{transform:translateY(2px);}
+.grid{display:grid;grid-template-columns:280px 1fr 360px;gap:24px;align-items:start;}
+
+/* Titres */
+.h3{margin:0 0 16px;font-size:var(--title-size);color:#ddd;letter-spacing:1px;text-transform:uppercase;}
+
+/* Tips */
+.tip{margin-top:20px;font-size:10px;color:#9a9a9a;text-align:center;padding-top:10px;opacity:.95;}
+.tip span{color:#000;background:var(--accent);padding:0 4px;}
+
+/* Cadres */
+.panel,.canvas-wrap,.panel-dark,.fillbar-container,.table,.total-box{border:var(--frame) solid #000;}
+
+/* Palette */
+.panel{
+  background:var(--panel);
+  padding:16px 14px;
+  box-shadow:var(--shadow45);
+  display:flex;flex-direction:column;
+  min-height:650px;
+}
+.palette{display:flex;flex-direction:column;gap:var(--palette-gap);}
+.swatch{
+  position:relative;
+  display:flex;align-items:center;gap:12px;
+  background:#282828;
+  border:var(--frame) solid #000;
+  padding:14px;
+  min-height:var(--swatch-min-h);
+  box-shadow:var(--shadow45);
+  cursor:pointer;
+  transition:box-shadow .2s ease,opacity .15s ease;
+}
+.swatch .bar{position:absolute;left:0;top:0;right:0;height:6px;background:var(--accent);}
+.label,.price{font-size:11px;color:#fff;line-height:1;font-family:'Press Start 2P',monospace;text-transform:none;}
+.swatch .spacer{flex:1;}
+.swatch.active{opacity:1;box-shadow:4px 8px 0 #000,18px 18px 28px rgba(0,0,0,.6);}
+@keyframes glow{0%{filter:brightness(1);}50%{filter:brightness(1.25);}100%{filter:brightness(1);}}
+.swatch.active .bar{animation:glow 1.2s infinite ease-in-out;}
+
+/* Canvas */
+.canvas-wrap{
+  background:var(--panel);
+  padding:16px 14px;
+  box-shadow:var(--shadow45);
+  display:flex;flex-direction:column;justify-content:space-between;
+  min-height:650px;
+}
+.canvas-head{font-size:var(--title-size);margin-bottom:8px;color:#ddd;}
+.stage{background:var(--panel);border:var(--frame) solid #000;padding:0;display:flex;justify-content:center;align-items:center;box-shadow:var(--shadow45);}
+canvas#board{
+  width:528px;height:528px;aspect-ratio:1/1;
+  image-rendering:pixelated;display:block;margin:0;border:none;
+  background:
+    linear-gradient(90deg,rgba(51,51,51,0.05)1px,transparent 1px)0 0/16px 16px,
+    linear-gradient(rgba(51,51,51,0.05)1px,transparent 1px)0 0/16px 16px,
+    #ffffff;
+  cursor:crosshair;
+}
+.tools{margin-top:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.tools .btn{background:#2c2c30;color:#fff;}
+
+/* Artwork Value */
+.panel-dark{
+  background:var(--panel);
+  padding:22px 18px;
+  box-shadow:var(--shadow45);
+  display:flex;flex-direction:column;
+  min-height:650px;
+}
+.pixel-box{margin-bottom:20px;}
+.fillbar-container{background:#fff;height:22px;position:relative;margin-bottom:8px;}
+.fillbar{position:absolute;top:0;left:0;height:100%;background:var(--accent);width:0%;transition:width .3s ease;}
+.meter-text{font-size:10px;margin-top:10px;text-align:center;color:#ccc;}
+.table{padding:12px;background:var(--panel2);box-shadow:inset 0 2px 6px rgba(0,0,0,.4);flex-grow:1;margin-bottom:14px;}
+.line{display:flex;justify-content:space-between;align-items:center;font-size:10px;padding:6px 0;border-bottom:1px solid #444;}
+.line span:nth-child(1){width:70px;text-align:left;}
+.line span:nth-child(2){width:55px;text-align:center;}
+.line span:nth-child(3){width:110px;text-align:right;}
+.line:last-child{border-bottom:none;}
+.total-box{background:#232428;padding:32px;text-align:center;margin-bottom:16px;}
+.total-box .ttl{font-size:12px;color:#ccc;}
+.total-box .val{font-size:22px;margin-top:10px;display:block;color:var(--accent);}
+.total-box .usd{font-size:12px;color:#aaa;margin-top:6px;}
+
+/* Mint */
+.mint-box{
+  position:relative;
+  background:linear-gradient(180deg,#f9d74b 0%,#e5b900 100%);
+  border:var(--frame) solid #000;
+  box-shadow:var(--shadow45);
+  padding:42px 0;
+  min-height:140px;
+  text-align:center;
+  cursor:pointer;
+  overflow:hidden;
+  transition:transform .1s ease,box-shadow .2s ease;
+  margin-top:auto;
+}
+.mint-box span{color:#000;font-size:24px;letter-spacing:0px;position:relative;z-index:2;}
+.mint-box::after{content:"";position:absolute;top:0;left:-75%;width:50%;height:100%;background:rgba(255,255,255,0.5);transform:skewX(-25deg);animation:shine 3s infinite;}
+@keyframes shine{0%{left:-75%;}50%{left:125%;}100%{left:125%;}}
+.mint-box:hover{transform:translateY(-2px);box-shadow:4px 4px 0 #000,14px 14px 18px rgba(0,0,0,0.4);}
+.mint-box:active{transform:translateY(3px);box-shadow:2px 2px 0 #000,8px 8px 10px rgba(0,0,0,0.3);}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">DRAW&nbsp;BITCOIN</div>
+    <button class="btn">CONNECT WALLET</button>
+  </header>
+
+  <div class="grid">
+    <!-- Palette -->
+    <aside class="panel">
+      <h3 class="h3">PALETTE</h3>
+      <div id="palette" class="palette"></div>
+      <div class="tip">Hold <span>ALT</span> to erase</div>
+    </aside>
+
+    <!-- Canvas -->
+    <main class="canvas-wrap">
+      <div class="canvas-head h3">CANVAS 32×32</div>
+      <div class="stage"><canvas id="board" width="32" height="32"></canvas></div>
+      <div class="tools">
+        <button class="btn" id="resetBtn">RESET</button>
+        <button class="btn" id="exportPngBtn">EXPORT PNG</button>
+        <button class="btn" id="exportJsonBtn">JSON</button>
+      </div>
+    </main>
+
+    <!-- Artwork Value -->
+    <aside class="panel-dark">
+      <div class="pixel-box">
+        <h3 class="h3">ARTWORK VALUE</h3>
+        <div class="fillbar-container"><div id="fillbar" class="fillbar"></div></div>
+        <div class="meter-text" id="filltext">0 % filled · 0 / 1024 px</div>
+      </div>
+      <div class="table" id="summary"></div>
+      <div class="total-box">
+        <div class="ttl">TOTAL</div>
+        <span class="val" id="total">0.0000 BTC</span>
+      </div>
+      <div class="mint-box"><span>MINT NOW</span></div>
+    </aside>
+  </div>
+</div>
+
+<script>
+/* === Palette === */
+const PALETTE = [
+  {name:'GOLD',   label:'Gold',   color:'#f3c623', price:0.01},
+  {name:'SILVER', label:'Silver', color:'#c0c6cf', price:0.001},
+  {name:'BRONZE', label:'Bronze', color:'#b87333', price:0.0001},
+  {name:'VIOLET', label:'Violet', color:'#7e5bef', price:0.00005},
+  {name:'BLUE',   label:'Blue',   color:'#0a84ff', price:0.00003},
+  {name:'GREEN',  label:'Green',  color:'#34c759', price:0.00002},
+  {name:'RED',    label:'Red',    color:'#ff3b30', price:0.00001},
+  {name:'BLACK',  label:'Black',  color:'#000000', price:0.0, priceLabel:'FREE'}
+];
+
+const paletteEl=document.getElementById('palette');
+let currentColor=PALETTE[0].color;
+
+PALETTE.forEach((p,i)=>{
+  const b=document.createElement('button');
+  b.className='swatch';
+  b.type='button';
+  b.innerHTML=`
+    <span class="bar" style="background:${p.color}"></span>
+    <span class="label">${p.label}</span>
+    <span class="spacer"></span>
+    <span class="price">${p.priceLabel ? p.priceLabel : p.price.toFixed(5)}</span>
+  `;
+  b.addEventListener('click',()=>{currentColor=p.color;highlight(b);});
+  paletteEl.appendChild(b);
+  if(i===0)highlight(b);
+});
+function highlight(b){
+  [...paletteEl.children].forEach(e=>{e.classList.remove('active');e.style.opacity="0.8";});
+  b.classList.add('active');b.style.opacity="1";
+}
+
+/* === Canvas Logic === */
+const W=32,H=32;
+const cvs=document.getElementById('board');
+const ctx=cvs.getContext('2d',{willReadFrequently:true});
+const grid=Array.from({length:H},()=>Array(W).fill(null));
+let isDown=false;
+cvs.addEventListener('pointerdown',e=>{isDown=true;paint(e);});
+cvs.addEventListener('pointermove',e=>{if(isDown)paint(e);});
+window.addEventListener('pointerup',()=>isDown=false);
+function paint(e){
+  const r=cvs.getBoundingClientRect();
+  const x=Math.floor((e.clientX-r.left)/r.width*W);
+  const y=Math.floor((e.clientY-r.top)/r.height*H);
+  if(x<0||y<0||x>=W||y>=H)return;
+  if(e.altKey){ctx.clearRect(x,y,1,1);grid[y][x]=null;}
+  else{ctx.fillStyle=currentColor;ctx.fillRect(x,y,1,1);grid[y][x]=currentColor;}
+  update();
+}
+
+/* === Résumé === */
+const summary=document.getElementById('summary');
+const totalEl=document.getElementById('total');
+const fillbar=document.getElementById('fillbar');
+const filltext=document.getElementById('filltext');
+const BTC_USD=110000;
+function update(){
+  let total=0,filled=0;const counts={};PALETTE.forEach(p=>counts[p.name]=0);
+  ctx.clearRect(0,0,W,H);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const c=grid[y][x];if(!c)continue;
+    filled++;ctx.fillStyle=c;ctx.fillRect(x,y,1,1);
+    const p=PALETTE.find(pp=>pp.color===c);if(p){counts[p.name]++;total+=p.price;}
+  }
+  ctx.save();ctx.globalAlpha=.25;ctx.fillStyle='#000';
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    if(!grid[y][x])continue;
+    if(x+1<W&&!grid[y][x+1])ctx.fillRect(x+.85,y,.15,1);
+    if(y+1<H&&!grid[y+1][x])ctx.fillRect(x,y+.85,1,.15);
+  }ctx.restore();
+  summary.innerHTML='';
+  PALETTE.forEach(p=>{
+    const px=counts[p.name];
+    const btc=(px*p.price).toFixed(4);
+    const line=document.createElement('div');
+    line.className='line';
+    line.innerHTML=`<span>${p.label}</span><span>${px}</span><span>${btc} BTC</span>`;
+    summary.appendChild(line);
+  });
+  totalEl.textContent=total.toFixed(4)+' BTC';
+  const perc=Math.round(filled/(W*H)*100);
+  fillbar.style.width=perc+'%';
+  filltext.textContent=`${perc}% filled · ${filled} / ${W*H} px`;
+}
+update();
+
+/* === Boutons === */
+document.getElementById('resetBtn').addEventListener('click',()=>{
+  ctx.clearRect(0,0,W,H);for(let y=0;y<H;y++)for(let x=0;x<W;x++)grid[y][x]=null;update();
+});
+document.getElementById('exportPngBtn').addEventListener('click',()=>{
+  const exportCanvas=document.createElement('canvas');
+  const scale=32;exportCanvas.width=W*scale;exportCanvas.height=H*scale;
+  const ectx=exportCanvas.getContext('2d');ectx.imageSmoothingEnabled=false;
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(grid[y][x]){ectx.fillStyle=grid[y][x];ectx.fillRect(x*scale,y*scale,scale,scale);}
+  const link=document.createElement('a');link.download='drawbitcoin_1024.png';link.href=exportCanvas.toDataURL('image/png');link.click();
+});
+document.getElementById('exportJsonBtn').addEventListener('click',()=>{
+  const data={pixels:grid,btc_total:totalEl.textContent};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const link=document.createElement('a');link.download='drawbitcoin.json';link.href=URL.createObjectURL(blob);link.click();
+});
+</script>
+</body>
+</html>
